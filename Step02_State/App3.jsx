@@ -31,5 +31,5 @@ function App(){
         </div>
     )
 }
-
+// 이 파일을 import 하면 App 함수를 사용할수 있다.
 export default App;
