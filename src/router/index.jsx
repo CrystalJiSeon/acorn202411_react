@@ -8,6 +8,8 @@ import UserDetail from "../pages/UserDetail";
 import ProtectedRoute from "../components/ProtectedRoute";
 import UserUpdateForm from "../pages/UserUpdateForm";
 import UserPwdUpdateForm from "../pages/UserPwdUpdateForm";
+import PostForm from "../pages/PostForm";
+import PostDetail from "../pages/PostDetail";
 
 // 라우팅 정보를 배열에 미리 저장해 둔다.
 const routes=[
@@ -18,7 +20,9 @@ const routes=[
     {path:"/posts", element:<Post/>},
     {path:"/user/detail", element: <ProtectedRoute><UserDetail/></ProtectedRoute> },
     {path:"/user/edit", element: <ProtectedRoute><UserUpdateForm/></ProtectedRoute>},
-    {path:"/user/password/edit", element: <ProtectedRoute><UserPwdUpdateForm/></ProtectedRoute>}
+    {path:"/user/password/edit", element: <ProtectedRoute><UserPwdUpdateForm/></ProtectedRoute>},
+    {path:"/posts/new", element: <ProtectedRoute><PostForm/></ProtectedRoute>},
+    {path:"/posts/:num", element: <PostDetail/>}
 ];
 
 //export 해줄 router 객체를 만든다
