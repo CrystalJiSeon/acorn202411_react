@@ -38,7 +38,8 @@ function PostDetail(props) {
         .catch(error=>{
             console.log(error);
         });
-
+        //댓글 목록 받아오기
+        refreshComments();
     }, [num]);
 
     const [modalShow, setModalShow] = useState(false);
@@ -67,23 +68,56 @@ function PostDetail(props) {
         axios.post(`/posts/${num}/comments`, formObject)
         .then(res=>{
             console.log(res.data);
+            refreshComments();
+            //댓글 입력창 초기화
+            e.target.content.value=""; //textarea 의 value 에 빈 문자열 넣어주기 
         })
         .catch(error=>console.log(error));
     };
     //댓글 정보를 상태값으로 관리
     const [comments, setComments] = useState({
         list:[],
-        totalPageCount:0
+        totalPageCount:0,
+        isLoading:false,  //현재 로딩중 여부
+        currentPage:1,  //현재 댓글 페이지
+        btnDisabled:true //버튼 disabled 여부부
     });
 
     //댓글 정보를 얻어오는 함수
     const refreshComments = ()=>{
         axios.get(`/posts/${num}/comments?pageNum=1`)
         .then(res=>{
-            //응답되는 댓글 목록을 상태값에 넣어준다.
-            setComments(res.data);
+            setComments({
+                ...comments,
+                list:res.data.list,
+                totalPageCount:res.data.totalPageCount,
+                btnDisabled:res.data.totalPageCount === 1 
+            });
         })
         .catch(error=>console.log(error));
+    };
+
+    const handleMoreBtn = ()=>{
+        //로딩중에 여러번 눌러지지 않도록
+        if(comments.isLoading)return;
+        //현재 댓글 페이지 번호보다 1 이 더 큰 댓글 페이지를 요청한다.
+        const page = comments.currentPage + 1;
+        //로딩중이라고 상태값 변경
+        setComments({...comments, isLoading: true});
+        axios.get(`/posts/${num}/comments?pageNum=${page}`)
+        .then(res=>{
+            setComments({
+                ...comments,
+                list:[...comments.list, ...res.data.list],
+                isLoading:false,
+                currentPage:page,
+                btnDisabled:res.data.totalPageCount === page
+            });
+        })
+        .catch(error=>{
+            console.log(error);
+            setComments({...comments, isLoading:false});
+        });  
     };
 
     return (
@@ -150,14 +184,18 @@ function PostDetail(props) {
             </form>
             <div className={cx("comments")}>
                 <ul>
-                
+                    { comments.list.map(item => <CommentLi key={item.num} postNum={num} comment={item} onRefresh={refreshComments}/> ) }
                 </ul>
                 <div className="d-grid col-sm-6 mx-auto mb-5">
-                    <button className="btn btn-success" id="moreBtn">
-                        <span id="moreText">댓글 더보기</span>
-                        <div  id="spinner" className="spinner-border" role="status">
-                            <span className="visually-hidden">Loading...</span>
-                        </div>
+                    <button className="btn btn-success" 
+                        disabled={comments.btnDisabled} onClick={handleMoreBtn}>
+                        { comments.isLoading ?
+                            <div className="spinner-border" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                            </div>
+                            :
+                            <span>댓글 더보기</span>
+                        }
                     </button>
                 </div>
             </div>
@@ -178,7 +216,7 @@ function CommentLi({postNum, comment, onRefresh}){
     : 
         <svg className={cx("profile-image","default-icon")} xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+            <path fillRule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
         </svg>; 
                 
     /*
@@ -223,7 +261,7 @@ function CommentLi({postNum, comment, onRefresh}){
             <>
             	<svg style={{display:comment.num !== comment.parentNum ? "inline":"none"}}  
                     className={cx("reply-icon")} xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-		  			<path fill-rule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5z"/>
+		  			<path fillRule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5z"/>
 				</svg>
 				<pre>삭제된 댓글입니다</pre>
             </>
@@ -231,7 +269,7 @@ function CommentLi({postNum, comment, onRefresh}){
             <>
             	<svg style={{display:comment.num !== comment.parentNum ? "inline":"none"}}  
                     className={cx("reply-icon")} xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-	  				<path fill-rule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5z"/>
+	  				<path fillRule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5z"/>
 				</svg>
 				<dl>
                     <dt className={cx("comment-header")}>
