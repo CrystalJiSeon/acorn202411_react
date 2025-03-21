@@ -11,6 +11,7 @@ import UserPwdUpdateForm from "../pages/UserPwdUpdateForm";
 import PostForm from "../pages/PostForm";
 import PostDetail from "../pages/PostDetail";
 import PostUpdateForm from "../pages/PostUpdateForm";
+import Quiz from "../pages/Quiz";
 
 // 라우팅 정보를 배열에 미리 저장해 둔다.
 const routes=[
@@ -24,7 +25,8 @@ const routes=[
     {path:"/user/password/edit", element: <ProtectedRoute><UserPwdUpdateForm/></ProtectedRoute>},
     {path:"/posts/new", element: <ProtectedRoute><PostForm/></ProtectedRoute>},
     {path:"/posts/:num", element: <PostDetail/>},
-    {path:"/posts/:num/edit", element: <ProtectedRoute><PostUpdateForm/></ProtectedRoute>}
+    {path:"/posts/:num/edit", element: <ProtectedRoute><PostUpdateForm/></ProtectedRoute>},
+    {path:"/quiz", element:<Quiz/>}
 ];
 
 //export 해줄 router 객체를 만든다
