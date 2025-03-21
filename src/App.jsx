@@ -1,4 +1,4 @@
-import { useOutlet } from "react-router-dom";
+import { useLocation, useOutlet } from "react-router-dom";
 //bootstrap css 로딩하기 
 import 'bootstrap/dist/css/bootstrap.css'
 import BsNavBar from "./components/BsNavBar";
@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { AnimatePresence, motion } from "framer-motion";
 
 function App(){
 
@@ -43,12 +44,27 @@ function App(){
             })
         }
     }, []);
+    
+    const location = useLocation();
 
     return (
         <>
             <BsNavBar/>
             <div className="container" style={{marginTop:"60px"}}>
-                <div>{currentOutlet}</div>
+            <div style={{ position: "relative", overflow: "hidden" }}>
+                <AnimatePresence mode="wait">
+                    {/* key가 바뀌면 AnimatePresence가 페이지 전환으로 인식 */}
+                    <motion.div
+                        key={location.pathname}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                       <div>{currentOutlet}</div>
+                    </motion.div>
+                </AnimatePresence>
+            </div>
             </div>
             <LoginModal show={loginModal.show}/>
         </>
